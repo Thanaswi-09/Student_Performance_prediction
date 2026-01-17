@@ -8,18 +8,16 @@ from sklearn.pipeline import Pipeline
 from sklearn.feature_selection import SelectKBest, chi2
 from sklearn.svm import LinearSVC
 
-# --- Read Dataset ---
+
 df = pd.read_csv("student-mat.csv", sep=";")
 
-# --- Split Data Function ---
 def split_data(X, Y):
     return train_test_split(X, Y, test_size=0.2, random_state=17)
 
-# --- Confusion Matrix and Evaluation ---
+
 def confuse(y_true, y_pred, scenario):
     cm = confusion_matrix(y_true=y_true, y_pred=y_pred)
 
-    # --- Rates ---
     fp = cm[0][1]
     tf = cm[0][0]
     ff = cm[1][0]
@@ -27,14 +25,12 @@ def confuse(y_true, y_pred, scenario):
     false_pass_rate = round(fp / (fp + tf), 3)
     false_fail_rate = round(ff / (ff + tp), 3)
 
-    # --- Display Metrics ---
     print("\nConfusion Matrix:")
     print(cm)
     print(f"\nFalse Pass Rate: {false_pass_rate}")
     print(f"False Fail Rate: {false_fail_rate}")
     print("\nClassification Report:\n", classification_report(y_true, y_pred))
 
-    # --- Visualization: Confusion Matrix ---
     plt.figure(figsize=(5, 4))
     plt.imshow(cm, interpolation='nearest', cmap=plt.cm.Blues)
     plt.title(f"Confusion Matrix - {scenario}")
@@ -51,7 +47,6 @@ def confuse(y_true, y_pred, scenario):
     plt.tight_layout()
     plt.show()
 
-    # --- Visualization: Pass/Fail Distribution ---
     labels = ["Fail", "Pass"]
     counts = [np.sum(y_pred == 0), np.sum(y_pred == 1)]
     plt.figure(figsize=(5, 4))
@@ -60,7 +55,6 @@ def confuse(y_true, y_pred, scenario):
     plt.ylabel("Number of Students")
     plt.show()
 
-# --- Train, Evaluate and Visualize ---
 def train_and_score(X, y, scenario):
     X_train, X_test, y_train, y_test = split_data(X, y)
 
@@ -76,7 +70,6 @@ def train_and_score(X, y, scenario):
     y_pred = clf.predict(X_test)
     test_acc = accuracy_score(y_test, y_pred)
 
-    # --- Output Formatting ---
     print("=" * 80)
     print(f"{scenario.center(80)}")
     print("=" * 80)
@@ -87,20 +80,17 @@ def train_and_score(X, y, scenario):
     confuse(y_test, y_pred, scenario)
     print("=" * 80, "\n\n")
 
-# --- Main Program ---
 def main():
     print("\n" + "="*80)
     print("STUDENT PERFORMANCE PREDICTION SYSTEM WITH VISUALIZATION".center(80))
     print("="*80)
 
-    # Encode categorical columns
     class_le = LabelEncoder()
     for column in ["school", "sex", "address", "famsize", "Pstatus", "Mjob", "Fjob",
                    "reason", "guardian", "schoolsup", "famsup", "paid", "activities",
                    "nursery", "higher", "internet", "romantic"]:
         df[column] = class_le.fit_transform(df[column].values)
 
-    # Encode G1, G2, G3 as binary pass/fail
     df["G1"] = (df["G1"] >= 10).astype(int)
     df["G2"] = (df["G2"] >= 10).astype(int)
     df["G3"] = (df["G3"] >= 10).astype(int)
@@ -108,7 +98,6 @@ def main():
     y = df.pop("G3")
     X = df.copy()
 
-    # --- Run three scenarios ---
     train_and_score(X, y, "MODEL KNOWING G1 & G2 SCORES")
 
     X_wo_G2 = X.drop(["G2"], axis=1)
@@ -117,5 +106,4 @@ def main():
     X_wo_G1G2 = X.drop(["G1", "G2"], axis=1)
     train_and_score(X_wo_G1G2, y, "MODEL WITHOUT KNOWING ANY SCORES")
 
-# --- Execute Program ---
 main()
